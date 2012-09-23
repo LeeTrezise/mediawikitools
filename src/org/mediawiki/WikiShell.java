@@ -2597,9 +2597,11 @@ public class WikiShell {
 			if(f.exists()) {
 				System.err.println("WARNING: Overwriting old command");
 			}
-			c.perform(new CommandContext());
+			CommandContext cc = new CommandContext();
+			c.getEssentialInput(cc);
+			c.getAuxiliaryInput(cc);
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
-			oos.writeObject(c);
+			oos.writeObject(cc);
 			oos.flush();
 			oos.close();
 			
