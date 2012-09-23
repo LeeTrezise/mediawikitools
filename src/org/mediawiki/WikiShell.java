@@ -456,7 +456,34 @@ public class WikiShell {
 							continue prompt;
 						}
 					} else {
+						File f = new File(tokens[0]+".wcom");
+						if(f.exists()) {
+							//Custom Command Detected
+							ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
+							String commandName = (String)ois.readUTF();
+							try {
+								CommandContext cc = (CommandContext)ois.readObject();
+								if(commands.containsKey(commandName)) {
+									commands.get(commandName).perform(cc);
+								} else {
+									System.err.println("Invalid Custom Command found: " + commandName);
+								}
+							} catch (ClassNotFoundException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (MediaWikiException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (ParseException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							ois.close();
+							
+						}
+						else {
 						System.err.println(tokens[0] + ": No such command");
+						}
 					}
 				}
 			}
@@ -2588,19 +2615,25 @@ public class WikiShell {
 				return;
 			}
 			
+			if(commands.containsKey(args[0])) {
+				System.err.println("Cannot override inbuilt commands");
+				return;
+			}
+			
 			Command c = commands.get(args[1]);
 			if(c == null) {
 				System.err.println("Invalid Command specified. Cannot find command: " + args[1]);
 				return;
 			}
 			File f = new File(args[0]+".wcom");
-			if(f.exists()) {
-				System.err.println("WARNING: Overwriting old command");
-			}
+			
+			
 			CommandContext cc = new CommandContext();
 			c.getEssentialInput(cc);
 			c.getAuxiliaryInput(cc);
+			c.getPageName(cc);
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+			oos.writeUTF(args[1]);
 			oos.writeObject(cc);
 			oos.flush();
 			oos.close();
