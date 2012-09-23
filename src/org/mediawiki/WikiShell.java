@@ -390,6 +390,7 @@ public class WikiShell {
 			commands.put("count", new CountPages());
 			commands.put("help", new Help());
 			commands.put("commands", new CommandList());
+			commands.put("make", new MakeCommand());
 		} finally {
 			workEnd();
 		}
@@ -2570,6 +2571,52 @@ public class WikiShell {
 		}
 	}
 
+	
+	public static class MakeCommand extends AbstractCommand {
+
+		@Override
+		public void getEssentialInput(CommandContext context) throws IOException, NullPointerException, CancellationException {
+			//TODO Complete this
+			//TODO
+			//TODO
+		}
+		
+		public void perform(CommandContext context) throws IOException,	MediaWikiException, ParseException {
+			String[] args = context.arguments.split(" ");
+			if(args.length != 2) {
+				System.err.println("Invalid Arguments. Expected two, got: " + args.length);
+				return;
+			}
+			
+			Command c = commands.get(args[1]);
+			if(c == null) {
+				System.err.println("Invalid Command specified. Cannot find command: " + args[1]);
+				return;
+			}
+			File f = new File(args[0]+".wcom");
+			if(f.exists()) {
+				System.err.println("WARNING: Overwriting old command");
+			}
+			c.perform(new CommandContext());
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+			oos.writeObject(c);
+			oos.flush();
+			oos.close();
+			
+		}
+
+		public void help() throws IOException {
+			System.err.println("Creates an alias for a command with preset input");
+			System.err.println();
+			System.err.println("make [<aliasname>] [<command>]");
+			System.err.println("Both aliasname and command are required input, and will be requested if not given");
+			System.err.println("You will be requested to fill out the information required by the command to run without");
+			System.err.println("requested when run in the future");
+			
+		}
+		
+	}
+	
 	public static class NewSection extends AbstractEditTokenCommand {
 		@Override
 		public void getEssentialInput(final CommandContext context) throws IOException, NullPointerException, CancellationException {
