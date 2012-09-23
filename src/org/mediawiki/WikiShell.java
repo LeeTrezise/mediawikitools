@@ -463,8 +463,12 @@ public class WikiShell {
 							String commandName = (String)ois.readUTF();
 							try {
 								CommandContext cc = (CommandContext)ois.readObject();
+								cc.wiki = wiki;
+								System.out.println(cc);
 								if(commands.containsKey(commandName)) {
+									commands.get(commandName).getToken(cc);
 									commands.get(commandName).perform(cc);
+									
 								} else {
 									System.err.println("Invalid Custom Command found: " + commandName);
 								}
@@ -490,7 +494,8 @@ public class WikiShell {
 		} catch (final CancellationException e) {
 			// we'd go back one level here, but that's not strictly necessary
 		} catch (final NullPointerException e) {
-			System.err.println();
+			//System.err.println();
+			e.printStackTrace();
 		} catch (final IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -2629,9 +2634,11 @@ public class WikiShell {
 			
 			
 			CommandContext cc = new CommandContext();
+			
 			c.getEssentialInput(cc);
 			c.getAuxiliaryInput(cc);
 			c.getPageName(cc);
+			
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
 			oos.writeUTF(args[1]);
 			oos.writeObject(cc);
